@@ -18,6 +18,25 @@ public class Cita {
         this.cliente = cliente;
     }
 
+    public Date getFecha() {
+        return fecha;
+    }
+
+    public Time getHora() {
+        return hora;
+    }
+
+    public int getPropiedad() {
+        return propiedad;
+    }
+
+    public int getAgente() {
+        return agente;
+    }
+
+    public int getCliente() {
+        return cliente;
+    }
 
 }
 

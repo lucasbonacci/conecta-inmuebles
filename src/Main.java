@@ -26,7 +26,7 @@ public class Main {
                     registrarUsuario(scanner);
                     break;
                 case 2:
-                    iniciarSesion(scanner);
+                    iniciarSesion(scanner, baseDeDatos);
                     break;
                 case 3:
                     exit = true;
@@ -53,24 +53,28 @@ public class Main {
         String contrasena = scanner.nextLine();
 
         Cliente nuevoCliente = new Cliente(nombre, apellido, email, direccion, contrasena, 0,baseDeDatos);
-        baseDeDatos.registrarUsuario(nuevoCliente);
+        Usuario.registrarUsuario(nuevoCliente);
 
         System.out.println("Usuario registrado exitosamente.");
     }
 
-    private static void iniciarSesion(Scanner scanner) {
+    private static void iniciarSesion(Scanner scanner, BaseDeDatos baseDeDatos) {
         System.out.print("Ingrese su email: ");
         String email = scanner.nextLine();
         System.out.print("Ingrese su contraseña: ");
         String contrasena = scanner.nextLine();
 
-        Usuario usuario = baseDeDatos.obtenerUsuarioPorEmail(email);
+        Usuario usuario = Usuario.obtenerUsuarioPorEmail(baseDeDatos, email);
 
-        if (usuario != null && usuario.iniciarSesion(email, contrasena)) {
-            System.out.println("Sesión iniciada exitosamente.");
-            mostrarOpcionesPorRol(usuario, scanner);
+        if (usuario != null) {
+            if (usuario.iniciarSesion(email, contrasena)) {
+                System.out.println("Sesión iniciada exitosamente.");
+                mostrarOpcionesPorRol(usuario, scanner);
+            } else {
+                System.out.println("Credenciales incorrectas. Por favor intente de nuevo.");
+            }
         } else {
-            System.out.println("Credenciales incorrectas. Por favor intente de nuevo.");
+            System.out.println("El usuario está suspendido y no puede iniciar sesión.");
         }
     }
 
@@ -90,12 +94,105 @@ public class Main {
         }
     }
 
-    private static void mostrarOpcionesAdministrador(Administrador administrador,Scanner scanner) {
-        System.out.println("Opciones de administrador:");
+    private static void mostrarOpcionesAdministrador(Administrador administrador, Scanner scanner) {
+        boolean exit = false;
+
+        while (!exit) {
+            System.out.println("Opciones de administrador:");
+            System.out.println("1. Registrar agente");
+            System.out.println("2. Suspender agente");
+            System.out.println("3. Reactivar agente");
+            System.out.println("4. Listar agentes");
+            System.out.println("5. Obtener detalle de agente");
+            System.out.println("6. Seleccionar propiedad");
+            System.out.println("7. Eliminar agente");
+            System.out.println("8. Eliminar propiedad");
+            System.out.println("9. Listar propiedades");
+            System.out.println("10. Cerrar sesión");
+            System.out.print("Seleccione una opción: ");
+            int opcion = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (opcion) {
+                case 1:
+                    administrador.registrarAgente(scanner);
+                    break;
+                case 2:
+                    administrador.suspenderAgente(scanner);
+                    break;
+                case 3:
+                    administrador.reactivarAgente(scanner);
+                    break;
+                case 4:
+                    administrador.listarAgentes();
+                    break;
+                case 5:
+                    administrador.obtenerDetalleAgente(scanner);
+                    break;
+                case 6:
+                    administrador.obtenerDetallePropiedad(scanner);
+                    break;
+                case 7:
+                    administrador.eliminarAgente(scanner);
+                    break;
+                case 8:
+                    administrador.eliminarPropiedad(scanner);
+                    break;
+                case 9:
+                    administrador.listarPropiedades();
+                    break;
+                case 10:
+                    exit = true;
+                    break;
+                default:
+                    System.out.println("Opción no válida. Por favor intente de nuevo.");
+            }
+        }
     }
 
-    private static void mostrarOpcionesAgente(Agente agente,Scanner scanner) {
-        System.out.println("Opciones de agente:");
+
+    private static void mostrarOpcionesAgente(Agente agente, Scanner scanner) {
+        boolean exit = false;
+
+        while (!exit) {
+            System.out.println("Opciones de agente:");
+            System.out.println("1. Crear propiedad");
+            System.out.println("2. Editar propiedad");
+            System.out.println("3. Eliminar propiedad");
+            System.out.println("4. Listar propiedades");
+            System.out.println("5. Obtener detalle de propiedad");
+            System.out.println("6. Listar citas");
+            System.out.println("7. Cerrar sesión");
+            System.out.print("Seleccione una opción: ");
+            int opcion = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (opcion) {
+                case 1:
+                    agente.crearPropiedad(scanner);
+                    break;
+                case 2:
+                    agente.editarPropiedad(scanner);
+                    break;
+                case 3:
+                    agente.eliminarPropiedad(scanner);
+                    break;
+                case 4:
+                    agente.listarPropiedades();
+                    break;
+                case 5:
+                    agente.obtenerDetallePropiedad(scanner);
+                    break;
+                case 6:
+                    agente.listarCitas(scanner);
+                    break;
+                case 7:
+                    exit = true;
+                    break;
+                default:
+                    System.out.println("Opción no válida. Por favor intente de nuevo.");
+            }
+        }
     }
 
     private static void mostrarOpcionesCliente(Cliente cliente, Scanner scanner) {
@@ -111,7 +208,7 @@ public class Main {
             System.out.println("6. Cerrar sesión");
             System.out.print("Seleccione una opción: ");
             int opcion = scanner.nextInt();
-            scanner.nextLine();  // Consumir el salto de línea
+            scanner.nextLine();
 
             switch (opcion) {
                 case 1:

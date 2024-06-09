@@ -23,41 +23,47 @@ public class Cliente extends Usuario {
                 String ubicacion = rs.getString("ubicacion");
                 float precio = rs.getFloat("precio");
                 float tamano = rs.getFloat("tamano");
-                String fotos = rs.getString("fotos");
                 String estado = rs.getString("estado");
 
-                System.out.println("ID: " + id + ", Ubicación: " + ubicacion + ", Precio: " + precio + ", Tamaño: " + tamano + ", Fotos: " + fotos + ", Estado: " + estado);
+                System.out.println("ID: " + id + ", Ubicación: " + ubicacion + ", Precio: " + precio + ", Tamaño: " + tamano + ", Estado: " + estado);
             }
         } catch (SQLException e) {
             System.out.println("Error al listar las propiedades: " + e.getMessage());
         }
     }
 
-
-
     public void agendarCita(Scanner scanner) {
         System.out.print("Ingrese el ID de la propiedad que desea visitar: ");
         int propiedadId = scanner.nextInt();
-        scanner.nextLine();  // Consumir el salto de línea
+        scanner.nextLine();
         System.out.print("Ingrese la fecha de la cita (YYYY-MM-DD): ");
         String fecha = scanner.nextLine();
         System.out.print("Ingrese la hora de la cita (HH:MM:SS): ");
         String hora = scanner.nextLine();
 
+        Date fechaCita = Date.valueOf(fecha);
+        Time horaCita = Time.valueOf(hora);
+
         try (Connection connection = baseDeDatos.conectar()) {
+            int agenteId = obtenerAgentePorPropiedad(connection, propiedadId);
+
+            Cita nuevaCita = new Cita(0, fechaCita, horaCita, propiedadId, agenteId, this.id);
+
             String sql = "INSERT INTO Citas (fecha, hora, propiedad_id, agente_id, cliente_id) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement pstmt = connection.prepareStatement(sql);
-            pstmt.setDate(1, Date.valueOf(fecha));
-            pstmt.setTime(2, Time.valueOf(hora));
-            pstmt.setInt(3, propiedadId);
-            pstmt.setInt(4, obtenerAgentePorPropiedad(connection, propiedadId)); // Obtener el ID del agente asignado a la propiedad
-            pstmt.setInt(5, this.id);
-            pstmt.executeUpdate();
-            System.out.println("Cita agendada exitosamente.");
+            try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+                pstmt.setDate(1, nuevaCita.getFecha());
+                pstmt.setTime(2, nuevaCita.getHora());
+                pstmt.setInt(3, nuevaCita.getPropiedad());
+                pstmt.setInt(4, nuevaCita.getAgente());
+                pstmt.setInt(5, nuevaCita.getCliente());
+                pstmt.executeUpdate();
+                System.out.println("Cita agendada exitosamente.");
+            }
         } catch (SQLException e) {
             System.out.println("Error al agendar la cita: " + e.getMessage());
         }
     }
+
 
     private int obtenerAgentePorPropiedad(Connection connection, int propiedadId) throws SQLException {
         String sql = "SELECT agente_id FROM Propiedades WHERE propiedad_id = ?";
@@ -105,7 +111,7 @@ public class Cliente extends Usuario {
     public void editarCita(Scanner scanner) {
         System.out.print("Ingrese el ID de la cita que desea editar: ");
         int citaId = scanner.nextInt();
-        scanner.nextLine();  // Consumir el salto de línea
+        scanner.nextLine();
         System.out.print("Ingrese la nueva fecha de la cita (YYYY-MM-DD): ");
         String fecha = scanner.nextLine();
         System.out.print("Ingrese la nueva hora de la cita (HH:MM:SS): ");
@@ -128,7 +134,7 @@ public class Cliente extends Usuario {
     public void cancelarCita(Scanner scanner) {
         System.out.print("Ingrese el ID de la cita que desea cancelar: ");
         int citaId = scanner.nextInt();
-        scanner.nextLine();  // Consumir el salto de línea
+        scanner.nextLine();
 
         try (Connection connection = baseDeDatos.conectar()) {
             String sql = "DELETE FROM Citas WHERE cita_id = ? AND cliente_id = ?";
@@ -140,11 +146,5 @@ public class Cliente extends Usuario {
         } catch (SQLException e) {
             System.out.println("Error al cancelar la cita: " + e.getMessage());
         }
-    }
-
-
-
-    public void registrar() {
-        System.out.println("registrar");
     }
 }
